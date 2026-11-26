@@ -1,0 +1,53 @@
+{
+  "target": "https://lucky-infinite-humpback.eur-1.aiven.app",
+  "at": "2026-11-21T23:29:22.555Z",
+  "typeahead": [
+    {
+      "stage": "10 shoppers typing",
+      "requests": 376,
+      "rps": 25.1,
+      "errorRate": "0%",
+      "clientP50": 218.3,
+      "clientP95": 569.5,
+      "clientP99": 910,
+      "serverP50": 15,
+      "serverP95": 98,
+      "serverP99": 286,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "25 shoppers typing",
+      "requests": 728,
+      "rps": 48.5,
+      "errorRate": "0%",
+      "clientP50": 309.8,
+      "clientP95": 825.4,
+      "clientP99": 1014.7,
+      "serverP50": 50,
+      "serverP95": 307,
+      "serverP99": 637,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "50 shoppers typing",
+      "requests": 964,
+      "rps": 64.3,
+      "errorRate": "0.7%",
+      "clientP50": 444.8,
+      "clientP95": 1394.5,
+      "clientP99": 2497.7,
+      "serverP50": 103,
+      "serverP95": 607,
+      "serverP99": 899,
+      "sources": {},
+      "errors": {
+        "503": 7
+      }
+    }
+  ],
+  "shops": null,
+  "presence": null,
+  "together": null
+}

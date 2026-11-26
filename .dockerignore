@@ -1,0 +1,22 @@
+# Never bake secrets or local state into images
+.env
+.env.*
+certs/
+*.pem
+*.key
+*.crt
+
+node_modules
+dist
+.vite
+coverage
+*.log
+.git
+.github
+.claude
+.vscode
+.idea
+notes/
+doc/
+*.mp4
+*.mov

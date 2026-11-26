@@ -1,0 +1,180 @@
+{
+  "target": "https://lucky-infinite-humpback.eur-1.aiven.app",
+  "at": "2026-11-21T22:23:43.758Z",
+  "typeahead": [
+    {
+      "stage": "10 shoppers typing",
+      "requests": 335,
+      "rps": 22.3,
+      "errorRate": "0%",
+      "clientP50": 240.2,
+      "clientP95": 729,
+      "clientP99": 1765.1,
+      "serverP50": 14,
+      "serverP95": 105,
+      "serverP99": 487,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "25 shoppers typing",
+      "requests": 700,
+      "rps": 46.7,
+      "errorRate": "0%",
+      "clientP50": 304.5,
+      "clientP95": 923.3,
+      "clientP99": 1205.6,
+      "serverP50": 55,
+      "serverP95": 396,
+      "serverP99": 595,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "50 shoppers typing",
+      "requests": 839,
+      "rps": 55.9,
+      "errorRate": "0%",
+      "clientP50": 573.2,
+      "clientP95": 1467,
+      "clientP99": 10947.8,
+      "serverP50": 107,
+      "serverP95": 702,
+      "serverP99": 10404,
+      "sources": {},
+      "errors": {}
+    }
+  ],
+  "shops": [
+    {
+      "stage": "10 shoppers in shop storefronts",
+      "requests": 33,
+      "rps": 2.2,
+      "errorRate": "0%",
+      "clientP50": 4287.6,
+      "clientP95": 9653.8,
+      "clientP99": 10204.1,
+      "serverP50": 2105,
+      "serverP95": 6060,
+      "serverP99": 8445,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "25 shoppers in shop storefronts",
+      "requests": 313,
+      "rps": 20.9,
+      "errorRate": "0%",
+      "clientP50": 329.1,
+      "clientP95": 1156.2,
+      "clientP99": 1399.1,
+      "serverP50": 26,
+      "serverP95": 500,
+      "serverP99": 697,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "50 shoppers in shop storefronts",
+      "requests": 486,
+      "rps": 32.4,
+      "errorRate": "0%",
+      "clientP50": 784.1,
+      "clientP95": 1852.8,
+      "clientP99": 2615.3,
+      "serverP50": 195,
+      "serverP95": 895,
+      "serverP99": 1299,
+      "sources": {},
+      "errors": {}
+    }
+  ],
+  "presence": [
+    {
+      "stage": "50 open product pages",
+      "requests": 200,
+      "rps": 10,
+      "errorRate": "0%",
+      "clientP50": 627.3,
+      "clientP95": 969.2,
+      "clientP99": 1227.5,
+      "serverP50": null,
+      "serverP95": null,
+      "serverP99": null,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "100 open product pages",
+      "requests": 400,
+      "rps": 20,
+      "errorRate": "0%",
+      "clientP50": 453.6,
+      "clientP95": 1380.9,
+      "clientP99": 2282.7,
+      "serverP50": null,
+      "serverP95": null,
+      "serverP99": null,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "200 open product pages",
+      "requests": 800,
+      "rps": 40,
+      "errorRate": "0%",
+      "clientP50": 1271,
+      "clientP95": 2044.6,
+      "clientP99": 2211.1,
+      "serverP50": null,
+      "serverP95": null,
+      "serverP99": null,
+      "sources": {},
+      "errors": {}
+    }
+  ],
+  "together": [
+    {
+      "stage": "10 shoppers opening product pages",
+      "requests": 99,
+      "rps": 6.6,
+      "errorRate": "0%",
+      "clientP50": 233.4,
+      "clientP95": 1719.9,
+      "clientP99": 2088,
+      "serverP50": 23,
+      "serverP95": 598,
+      "serverP99": 993,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "25 shoppers opening product pages",
+      "requests": 234,
+      "rps": 15.6,
+      "errorRate": "0%",
+      "clientP50": 262.3,
+      "clientP95": 1475.1,
+      "clientP99": 1905,
+      "serverP50": 17,
+      "serverP95": 899,
+      "serverP99": 1201,
+      "sources": {},
+      "errors": {}
+    },
+    {
+      "stage": "50 shoppers opening product pages",
+      "requests": 460,
+      "rps": 30.7,
+      "errorRate": "0%",
+      "clientP50": 263.1,
+      "clientP95": 1287.6,
+      "clientP99": 1638.5,
+      "serverP50": 15,
+      "serverP95": 299,
+      "serverP99": 395,
+      "sources": {},
+      "errors": {}
+    }
+  ]
+}

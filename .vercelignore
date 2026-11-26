@@ -1,0 +1,9 @@
+# Never upload secrets or local artifacts to Vercel (credentials go in Vercel env vars instead)
+.env
+.env.*
+!.env.example
+certs/
+node_modules/
+dist/
+*.log
+doc/*.pdf

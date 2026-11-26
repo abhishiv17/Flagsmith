@@ -1,0 +1,165 @@
+{
+  "target": "https://lucky-infinite-humpback.eur-1.aiven.app",
+  "note": "After PostgreSQL + OpenSearch moved from DigitalOcean Singapore to DigitalOcean Frankfurt (21 Nov 2026, ~19:15 IST). serverP* for search = OpenSearch tookMs.",
+  "polling": [
+    {
+      "stage": "25 shoppers polling",
+      "requests": 332,
+      "rps": 16.6,
+      "errorRate": "0%",
+      "clientP50": 262.1,
+      "clientP95": 1088.7,
+      "clientP99": 1869.2,
+      "serverP50": 1.8,
+      "serverP95": 26.5,
+      "serverP99": 110.2,
+      "sources": {
+        "opensearch": 14,
+        "valkey": 318
+      },
+      "errors": {}
+    },
+    {
+      "stage": "50 shoppers polling",
+      "requests": 658,
+      "rps": 32.9,
+      "errorRate": "0%",
+      "clientP50": 303.5,
+      "clientP95": 1362.7,
+      "clientP99": 2178.6,
+      "serverP50": 1.9,
+      "serverP95": 100.2,
+      "serverP99": 200.1,
+      "sources": {
+        "valkey": 658
+      },
+      "errors": {}
+    },
+    {
+      "stage": "100 shoppers polling",
+      "requests": 1328,
+      "rps": 66.4,
+      "errorRate": "0%",
+      "clientP50": 330.2,
+      "clientP95": 996.7,
+      "clientP99": 1648.4,
+      "serverP50": 1.8,
+      "serverP95": 7.8,
+      "serverP99": 99,
+      "sources": {
+        "valkey": 1328
+      },
+      "errors": {}
+    },
+    {
+      "stage": "200 shoppers polling",
+      "requests": 2610,
+      "rps": 130.5,
+      "errorRate": "0%",
+      "clientP50": 594.9,
+      "clientP95": 1357,
+      "clientP99": 2007.7,
+      "serverP50": 97.6,
+      "serverP95": 388.7,
+      "serverP99": 486.7,
+      "sources": {
+        "valkey": 2610
+      },
+      "errors": {}
+    }
+  ],
+  "search": [
+    {
+      "run": 1,
+      "stage": "10 users searching",
+      "requests": 495,
+      "rps": 33,
+      "errorRate": "0%",
+      "clientP50": 273.9,
+      "clientP95": 453.7,
+      "clientP99": 875,
+      "serverP50": 30,
+      "serverP95": 84,
+      "serverP99": 171
+    },
+    {
+      "run": 1,
+      "stage": "25 users searching",
+      "requests": 863,
+      "rps": 57.5,
+      "errorRate": "0%",
+      "clientP50": 410.9,
+      "clientP95": 749,
+      "clientP99": 948.6,
+      "serverP50": 93,
+      "serverP95": 195,
+      "serverP99": 268
+    },
+    {
+      "run": 1,
+      "stage": "50 users searching",
+      "requests": 901,
+      "rps": 60.1,
+      "errorRate": "0%",
+      "clientP50": 761.7,
+      "clientP95": 1343.4,
+      "clientP99": 1840.8,
+      "serverP50": 271,
+      "serverP95": 585,
+      "serverP99": 829
+    },
+    {
+      "run": 2,
+      "stage": "10 users searching",
+      "requests": 486,
+      "rps": 32.4,
+      "errorRate": "0%",
+      "clientP50": 285.5,
+      "clientP95": 561.1,
+      "clientP99": 726.6,
+      "serverP50": 36,
+      "serverP95": 102,
+      "serverP99": 237
+    },
+    {
+      "run": 2,
+      "stage": "25 users searching",
+      "requests": 832,
+      "rps": 55.5,
+      "errorRate": "0%",
+      "clientP50": 412.5,
+      "clientP95": 819.7,
+      "clientP99": 1057,
+      "serverP50": 80,
+      "serverP95": 291,
+      "serverP99": 463
+    },
+    {
+      "run": 2,
+      "stage": "50 users searching",
+      "requests": 1074,
+      "rps": 71.6,
+      "errorRate": "0%",
+      "clientP50": 683.2,
+      "clientP95": 1180.5,
+      "clientP99": 1437.5,
+      "serverP50": 237,
+      "serverP95": 448,
+      "serverP99": 627
+    }
+  ],
+  "checkout": {
+    "stage": "checkout stampede: 40 shoppers, 5 units (WRB-002 DEL)",
+    "cartAdds": 40,
+    "statuses": {
+      "201": 5,
+      "409": 35
+    },
+    "ordersInPostgres": 5,
+    "qtyAfter": 0,
+    "exact": true,
+    "wallMs": 696,
+    "p50": 531.6,
+    "p95": 691.9
+  }
+}

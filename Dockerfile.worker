@@ -1,0 +1,16 @@
+# workers: outbox relay, search indexer, notifier and lag monitor. No public port.
+# Runtime has no pre-deploy hook, so idempotent DB migrations run at container start.
+FROM node:22-slim
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package.json package-lock.json ./
+RUN npm ci --include=dev --no-audit --no-fund
+
+COPY tsconfig.json ./
+COPY server ./server
+COPY scripts ./scripts
+
+USER node
+CMD ["sh", "-c", "node --import tsx scripts/migrate.ts && exec node --import tsx server/workers/index.ts"]

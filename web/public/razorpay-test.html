@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StockHop Razorpay Test Checkout</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; max-width: 650px; margin: 3rem auto; padding: 0 1rem; color: #17212c; }
+    button { padding: .8rem 1.2rem; font: inherit; cursor: pointer; }
+    pre { white-space: pre-wrap; padding: 1rem; background: #f1f4f7; }
+    .notice { border-left: 4px solid #f49b24; padding: .5rem 1rem; background: #fff8eb; }
+  </style>
+</head>
+<body>
+  <h1>Razorpay Test Checkout</h1>
+  <p class="notice">Test Mode only. This page uses one existing Razorpay test order and does not create a StockHop order or change inventory. No real money moves.</p>
+  <p><strong>Order:</strong> <span id="order"></span></p>
+  <p><strong>Amount:</strong> <span id="amount"></span></p>
+  <button id="pay" disabled>Open Test Checkout</button>
+  <p>Open this same URL in five browser tabs, then start Checkout in each tab to test overlapping attempts against one order.</p>
+  <pre id="result">Checking test parameters…</pre>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const key = params.get('key');
+    const orderId = params.get('order');
+    const amount = Number(params.get('amount'));
+    const result = document.getElementById('result');
+    const pay = document.getElementById('pay');
+    document.getElementById('order').textContent = orderId || 'missing';
+    document.getElementById('amount').textContent = Number.isInteger(amount) ? `₹${(amount / 100).toFixed(2)}` : 'missing';
+    if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
+      result.textContent = 'This standalone payment test is available only on local development.';
+    } else if (!key?.startsWith('rzp_test_') || !/^order_[A-Za-z0-9]+$/.test(orderId || '') || !Number.isInteger(amount) || amount < 100) {
+      result.textContent = 'Missing or invalid Test Mode key, order ID, or amount.';
+    } else if (typeof Razorpay === 'undefined') {
+      result.textContent = 'Razorpay Checkout script did not load.';
+    } else {
+      pay.disabled = false;
+      result.textContent = 'Ready. This is a simulated Test Mode payment.';
+      pay.addEventListener('click', () => {
+        const checkout = new Razorpay({
+          key,
+          order_id: orderId,
+          amount,
+          currency: 'INR',
+          name: 'StockHop test only',
+          description: 'One-order payment-attempt experiment',
+          prefill: { contact: '+919000090000' },
+          handler(response) {
+            result.textContent = `Checkout returned a payment ID: ${response.razorpay_payment_id}. Verify the final order state in Razorpay; this browser callback alone is not proof of capture.`;
+          },
+          modal: { ondismiss() { result.textContent = 'Checkout dismissed without a confirmed payment.'; } },
+        });
+        checkout.on('payment.failed', (response) => {
+          result.textContent = `Test attempt failed: ${response.error?.description || response.error?.code || 'unknown reason'}`;
+        });
+        checkout.open();
+      });
+    }
+  </script>
+</body>
+</html>

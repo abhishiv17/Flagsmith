@@ -1,0 +1,46 @@
+# --- secrets: NEVER commit ---
+.env
+.env.*
+!.env.example
+certs/
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.jks
+
+# --- dependencies & builds ---
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+
+# --- logs & runtime ---
+*.log
+npm-debug.log*
+logs/
+
+# --- editors / OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- local tool settings ---
+.claude/settings.local.json
+
+# --- large media (demo recordings live outside git) ---
+*.mp4
+*.mov
+
+# Team-internal notes (pitch prep, event logistics, AI-tool evidence): local only
+notes/
+
+# --- Vercel link (per machine) ---
+.vercel
+
+# embedding model files (downloaded at build time)
+.models/

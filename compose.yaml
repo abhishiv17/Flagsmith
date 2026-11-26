@@ -1,0 +1,30 @@
+# Aiven Runtime deployment: two apps built from this repo.
+#   web     : storefront + API, public on HTTPS 443 -> container :8080
+#   workers : relay, indexer, notifier, monitor (no port)
+#
+# Data services are the EXISTING Aiven PostgreSQL, Kafka and OpenSearch in this project,
+# connected to each app in the console. There are deliberately no `image:` entries:
+# Runtime would provision new data services from them.
+#
+# Injected by the service integrations: DATABASE_URL, OPENSEARCH_URI, KAFKA_BOOTSTRAP_SERVERS,
+# KAFKA_ACCESS_CERT, KAFKA_ACCESS_KEY, KAFKA_CA_CERT. Secrets (ADMIN_TOKEN, PG_CA_CERT if the
+# Kafka CA isn't available) are set as secret variables in the console, never in this file.
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8080
+      - PG_POOL_MAX=5
+      - LOW_STOCK_THRESHOLD=2
+    ports:
+      - "8080:8080"
+
+  workers:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - PG_POOL_MAX=4
+      - LOW_STOCK_THRESHOLD=2

@@ -1,0 +1,17 @@
+# Outage drill on the live site, 21 Nov 2026 ~20:53–21:05 IST. Workers app powered off in Aiven, 3 sales, powered on at ~10 s on the watch clock.
+## buy (workers off)
+   0.8s before {"outbox":0,"inSync":"198/198","workersUp":1,"lag":0,"pgQty":8,"liveQty":8}
+   1.3s sale 1: add 200, checkout 201 SH-BLR-257
+   1.7s sale 2: add 200, checkout 201 SH-BLR-258
+   2.1s sale 3: add 200, checkout 201 SH-BLR-259
+   6.1s during outage {"outbox":6,"inSync":"197/198","workersUp":1,"lag":0,"pgQty":5,"liveQty":8}
+ORDERS ["25ae0538-c1b3-4bc7-8934-164e88a9331f","1fd1ac64-e9e7-4990-84c0-ad3bdf2d2b81","93f41dc9-2f43-4a43-9a2b-4aeeba12c367"]
+## watch (state changes only)
+   1.3s {"outbox":6,"inSync":"197/198","workersUp":1,"lag":0,"pgQty":5,"liveQty":8,"confirmationsSent":"0/3"}
+  53.1s {"outbox":0,"inSync":"197/198","workersUp":5,"lag":6,"pgQty":5,"liveQty":8,"confirmationsSent":"0/3"}
+  56.6s {"outbox":0,"inSync":"198/198","workersUp":5,"lag":3,"pgQty":5,"liveQty":8,"confirmationsSent":"3/3"}
+  60.0s {"outbox":0,"inSync":"198/198","workersUp":5,"lag":0,"pgQty":5,"liveQty":8,"confirmationsSent":"3/3"}
+ 286.5s {"outbox":0,"inSync":"198/198","workersUp":5,"lag":0,"pgQty":5,"liveQty":5,"confirmationsSent":"3/3"}
+## after the cache fix (1a86ade): restock 8 -> 7 -> 8, time until shoppers see it
+7: 1208 ms (valkey)
+8: 1048 ms (valkey)

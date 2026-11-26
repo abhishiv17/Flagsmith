@@ -1,0 +1,156 @@
+/*
+ * StockHop brand tokens. Direction follows the team's reference (royalbev.com):
+ * warm grained paper, deep navy ink, one crimson. Condensed, printed-grit display type for
+ * big statements, a handwritten script for lead-ins, a clean geometric sans for everything else.
+ *
+ * Token names are kept from the previous system so every page picks the palette up:
+ * "cobalt" is now the brand crimson, "signal" (scarcity) shares it.
+ */
+:root {
+  /* colour */
+  --paper: #e9e7dc;
+  --stone: #dedbcd; /* image tiles, alternating bands: a shade deeper than paper */
+  --stone-2: #d2cebd;
+  --card: #f4f2ea; /* lifted surfaces (forms, panels) */
+  --ink: #000e47; /* navy */
+  --ink-2: #2b3566;
+  --muted: #5f6585;
+  --line: #cbc7b6;
+  --cobalt: #b8223a; /* brand crimson (name kept for compatibility) */
+  --cobalt-ink: #921a2e;
+  --cobalt-soft: #f1d9dc;
+  --signal: #b8223a;
+  --signal-ink: #9c1c31;
+  --signal-soft: #f3dcdf;
+  --ok: #1d6b47;
+  --ok-soft: #dcebdf;
+  --warn-soft: #f4ead0;
+
+  /* legacy aliases used by older components */
+  --bg: var(--paper);
+  --surface: var(--card);
+  --sunken: var(--stone);
+  --accent: var(--cobalt);
+  --accent-ink: var(--cobalt-ink);
+  --accent-soft: var(--cobalt-soft);
+  --low: var(--signal);
+  --low-ink: var(--signal-ink);
+  --low-soft: var(--signal-soft);
+  --tile-a: #dcd8c8;
+  --tile-b: #d8dbd8;
+  --tile-c: #e0d6cc;
+
+  /* type */
+  --font: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif;
+  --font-script: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace; /* /ops only */
+
+  /* texture: fine paper grain (background) and printed grit (mask for display type) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .33 0 0 0 0 .28 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  /* Irregular clusters of flecks so type reads as worn print, not a dot screen (tuned by eye). */
+  --grit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.28' numOctaves='5' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -16 0 0 0 11'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  /* shape + depth */
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 14px;
+  --shadow-1: 0 1px 2px rgb(0 14 71 / 0.06), 0 10px 24px -14px rgb(0 14 71 / 0.3);
+  --shadow-2: 0 26px 50px -22px rgb(0 14 71 / 0.45);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+html { background: var(--paper); }
+body { background: var(--paper) var(--grain); }
+
+/* Tabular digits only on bare live counts that tick (never on prices or prose). */
+.count, .qty, .shot-qty, .store-stats dd, .city-stat b, .cat-count, .big, .lag {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Big statements: condensed, uppercase, printed grit. */
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+  margin: 0;
+  text-wrap: balance;
+}
+h3 {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+/* Printed grit is opt-in (.grit) so headings stay crisp and easy to read. */
+.grit {
+  -webkit-mask-image: var(--grit);
+  mask-image: var(--grit);
+  -webkit-mask-size: 300px;
+  mask-size: 300px;
+}
+
+/* Handwritten lead-in above a section heading. */
+.script {
+  font-family: var(--font-script);
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1;
+  color: var(--ink);
+  display: block;
+  margin-bottom: 6px;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--cobalt);
+  color: #fff;
+}
+
+/* Panel: used by cart, checkout, order, ops. */
+.box {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+/* Small status pill. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--stone);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
