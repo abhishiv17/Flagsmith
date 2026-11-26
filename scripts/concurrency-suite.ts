@@ -27,7 +27,7 @@ process.env.PG_POOL_MAX = opt('pool', '3');
 process.env.CART_CLAIMS = 'off';
 process.env.CHECKOUT_PAYMENTS = 'off';
 const DEPLOYED_URL = opt('url', 'https://stockhop.vercel.app');
-const OUT = opt('out', 'doc/12-metrics.md');
+const OUT = opt('out', 'doc/concurrency-results.md');
 // Opt-in: the deployed site has cart claims and payments on, so this suite's race doesn't apply there
 // (payment:race and e2e cover the live race). Run with --deployed --url=<app> to try anyway.
 const RUN_DEPLOYED = flag('deployed');
