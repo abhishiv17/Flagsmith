@@ -15,8 +15,11 @@ cp .env.example .env     # fill in the service URLs and FLAGSMITH_ENVIRONMENT_KE
 npm run smoke            # checks PostgreSQL, Kafka and OpenSearch connectivity
 npm run kafka:topics     # creates the Kafka topics
 npm run demo:reset       # migrates, creates the search index, seeds the catalogue
+npm run reviews:seed     # demo reviews for the reviews version of the experiment
 npm run dev:app          # API + storefront on http://localhost:5173
 ```
+
+On an existing database, `npm run db:migrate` adds the reviews table without touching anything else. `reviews:seed` replaces only the generated reviews, never ones shoppers wrote.
 
 `npm run dev` also starts the background workers. Don't run workers locally while the deployed workers are running: they share the same Kafka consumer groups and database connections.
 
@@ -40,4 +43,5 @@ npm test                 # unit tests
 npm run typecheck
 npm run test:concurrency # stock races, deadlocks, idempotency (writes doc/concurrency-results.md)
 npm run load:test        # load test against a running deployment
+npm run traffic:sim -- --dry-run   # simulated shoppers for the experiment (doc/flagsmith.md)
 ```

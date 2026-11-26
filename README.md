@@ -16,18 +16,20 @@ Team **Dark Launchers** · Toggle Wars: The Flagsmith Experimentation Hackathon 
 
 StockHop is a city-aware online store: every product shows how many are on the shelf in your city, live, and the last unit can never be sold twice. Its product page shows price, stock and partner shop offers, but nothing about what other shoppers think.
 
-Big marketplaces lead with reviews. A local store has something they don't: it knows how many people **in your city** just bought the item. So we test which one gets more shoppers to add to cart.
+Big marketplaces lead with reviews. A local store has something they don't: it knows how many people **in your city** just bought the item. So we test which one gets more shoppers to add to cart: **global reviews or local proof**.
 
 | | |
 |---|---|
-| **Hypothesis** | A trust signal on the product page raises the share of shoppers who add to cart by at least 10% over the current page |
+| **Hypothesis** | A trust signal on the product page raises the share of shoppers who add to cart by at least 10% over a page with none |
 | **Flag** | `product_trust_signal`, multivariate, split three ways |
-| **Versions** | **control** (today's page) · **reviews** (star rating and a short review) · **local-proof** ("N bought in your city this week") |
+| **Versions** | **control** (no trust signal) · **reviews** (stars, count and a recent review, plus a full reviews section where shoppers can write their own) · **local-proof** ("🔥 N bought in Bengaluru this week", from real orders) |
 | **Primary metric** | `add_to_cart`, per shopper |
 | **Secondary and guardrail** | `checkout_started`, `checkout_completed` and order revenue |
 | **Decision rule** | Ship a version at ≥ 95% win probability with no revenue loss; otherwise keep control |
 
-Full plan and results: [doc/experiment.md](doc/experiment.md)
+| **Traffic** | Real shoppers on the live store, plus simulated shoppers (`npm run traffic:sim`) reported separately |
+
+Full plan, known limitations and results: [doc/experiment.md](doc/experiment.md)
 
 ## How we use Flagsmith
 
@@ -55,8 +57,11 @@ Setup, code map, flags and events: [doc/flagsmith.md](doc/flagsmith.md)
 npm install
 cp .env.example .env     # Aiven service URLs + FLAGSMITH_ENVIRONMENT_KEY
 npm run demo:reset       # database, search index and catalogue
+npm run reviews:seed     # demo reviews
 npm run dev:app          # http://localhost:5173
 ```
+
+Preview a version locally with `?ff_product_trust_signal=reviews` (or `local-proof`) on any product page.
 
 Requirements, deployment and checks: [doc/setup.md](doc/setup.md)
 
@@ -79,7 +84,7 @@ Somya (lead) · Pradhyumna Kudtherkar · Zaiba Firdous · Abhishek M Shivanagoud
 - Embedding model: `Xenova/all-MiniLM-L6-v2` (Apache-2.0).
 - Product photos: Unsplash and Pexels, each photographer credited in [`web/src/productPhotos.ts`](web/src/productPhotos.ts). Cut-out images: Wikimedia Commons, by Vijay Verma (CC0), Trent Huss (CC BY-SA 4.0), PantheraLeo1359531 (CC BY-SA 4.0) and SeriouslyBored (CC0).
 - Fonts: Outfit, Anton, Caveat and JetBrains Mono (Google Fonts, OFL).
-- Product names, brands and partner shops in the demo catalogue are fictional.
+- Product names, brands, partner shops and the starting reviews in the demo catalogue are fictional. Reviews written on the site are stored separately.
 - AI coding assistants were used, as allowed by the hackathon rules.
 
 ## Security
