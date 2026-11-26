@@ -2,7 +2,7 @@
 
 # StockHop × Flagsmith
 
-### What makes a shopper trust a product page?
+### Do reviews make shoppers add to cart?
 
 An A/B test on a real online store, run with **Flagsmith feature flags** and **Flagsmith Experimentation**.
 
@@ -16,20 +16,19 @@ Team **Dark Launchers** · Toggle Wars: The Flagsmith Experimentation Hackathon 
 
 StockHop is a city-aware online store: every product shows how many are on the shelf in your city, live, and the last unit can never be sold twice. Its product page shows price, stock and partner shop offers, but nothing about what other shoppers think.
 
-Big marketplaces lead with reviews. A local store has something they don't: it knows how many people **in your city** just bought the item. So we test which one gets more shoppers to add to cart: **global reviews or local proof**.
+Big marketplaces lead with reviews. Do they earn their place on a local store's product page? We test it.
 
 | | |
 |---|---|
-| **Hypothesis** | A trust signal on the product page raises the share of shoppers who add to cart by at least 10% over a page with none |
-| **Flag** | `product_trust_signal`, multivariate, split three ways |
-| **Versions** | **control** (no trust signal) · **reviews** (stars, count and a recent review, plus a full reviews section where shoppers can write their own) · **local-proof** ("🔥 N bought in Bengaluru this week", from real orders) |
+| **Hypothesis** | Showing reviews on the product page raises the share of shoppers who add to cart by at least 10% |
+| **Flag** | `product_trust_signal`, multivariate, split 50 / 50 |
+| **Versions** | **control** (today's page) · **reviews** (stars, count and a recent review under the price, plus a full reviews section where shoppers can write their own) |
 | **Primary metric** | `add_to_cart`, per shopper |
 | **Secondary and guardrail** | `checkout_started`, `checkout_completed` and order revenue |
-| **Decision rule** | Ship a version at ≥ 95% win probability with no revenue loss; otherwise keep control |
-
+| **Decision rule** | Ship reviews at ≥ 95% win probability with no revenue loss; otherwise keep control |
 | **Traffic** | Real shoppers on the live store, plus simulated shoppers (`npm run traffic:sim`) reported separately |
 
-Full plan, known limitations and results: [doc/experiment.md](doc/experiment.md)
+We also designed a third version, "N bought in your city this week". We measured it before launch: it would have shown on only about 20% of products, so we cut it rather than run a diluted test. Full plan, what we cut and why, limitations and results: [doc/experiment.md](doc/experiment.md)
 
 ## How we use Flagsmith
 
@@ -61,7 +60,7 @@ npm run reviews:seed     # demo reviews
 npm run dev:app          # http://localhost:5173
 ```
 
-Preview a version locally with `?ff_product_trust_signal=reviews` (or `local-proof`) on any product page.
+Preview the reviews version locally with `?ff_product_trust_signal=reviews` on any product page.
 
 Requirements, deployment and checks: [doc/setup.md](doc/setup.md)
 

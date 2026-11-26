@@ -38,7 +38,7 @@ If no key is set, or Flagsmith can't be reached, every shopper gets the control 
 | [`web/src/state.tsx`](../web/src/state.tsx) | `add_to_cart` after a successful add (every add goes through here) |
 | [`web/src/pages/Checkout.tsx`](../web/src/pages/Checkout.tsx) | `checkout_started` and `checkout_completed` (with the order total) |
 | [`web/src/components/NotifyMe.tsx`](../web/src/components/NotifyMe.tsx) | `back_in_stock_alert` |
-| [`web/src/pages/Product.tsx`](../web/src/pages/Product.tsx) | Reads `product_trust_signal` and renders control, reviews or local-proof |
+| [`web/src/pages/Product.tsx`](../web/src/pages/Product.tsx) | Reads `product_trust_signal` and renders control or reviews |
 | [`web/src/components/Reviews.tsx`](../web/src/components/Reviews.tsx) | The reviews version; `review_submitted` |
 | [`server/routes/reviews.ts`](../server/routes/reviews.ts) | `GET`/`POST /api/products/:id/reviews` |
 | [`scripts/simulate-traffic.ts`](../scripts/simulate-traffic.ts) | Simulated shoppers (`npm run traffic:sim`) |
@@ -49,7 +49,7 @@ The SDK is `@flagsmith/flagsmith` 12.4.0, pinned exactly (the first version with
 
 | Flag | Type | Variants | Where it's read |
 |---|---|---|---|
-| `product_trust_signal` | Multivariate | control, `reviews`, `local-proof` | Product page |
+| `product_trust_signal` | Multivariate | control, `reviews` | Product page |
 
 Code branches on the **variant label**, not the value, so labels must be set on every variation in Flagsmith. A variation created through the API without a label is not counted.
 
@@ -92,13 +92,12 @@ flagsmith api api/v1/environments/<env>/warehouse-connections/   # must list a c
 ```
 
 ### 3. Create the flag
-A **multivariate** flag `product_trust_signal`, enabled, whose own value is `control`, with two variations **keyed** `reviews` and `local-proof`. The code reads the key, and a variation without a key is not counted.
+A **multivariate** flag `product_trust_signal`, enabled, whose own value is `control` (the control version), with one variation **keyed** `reviews`. The code reads the key, and a variation without a key is not counted.
 
 ```bash
 flagsmith feature create product_trust_signal --value control --enabled
 flagsmith feature variant add product_trust_signal --value reviews --key reviews --weight 0
-flagsmith feature variant add product_trust_signal --value local-proof --key local-proof --weight 0
-flagsmith feature get product_trust_signal --json   # note the flag id and both variation ids
+flagsmith feature get product_trust_signal --json   # note the flag id and the variation id
 ```
 
 ### 4. Create the metrics
@@ -109,27 +108,26 @@ One metric per row of the events table above, with the event name copied exactly
 ```
 
 ### 5. Create the experiment
-Attach it to `product_trust_signal`, enrol 100% of traffic split three ways, set `add_to_cart` as the primary metric, and copy the hypothesis from [experiment.md](experiment.md). Through the API that is `POST api/v1/environments/<env>/experiments/`:
+Attach it to `product_trust_signal`, enrol 100% of traffic split 50/50, set `add_to_cart` as the primary metric, and copy the hypothesis from [experiment.md](experiment.md). Through the API that is `POST api/v1/environments/<env>/experiments/`:
 
 ```json
 {
   "feature": "<flag id>",
-  "name": "Product page trust signal",
-  "hypothesis": "Showing a trust signal on the product page raises add-to-cart by at least 10% over a page with none.",
+  "name": "Reviews on the product page",
+  "hypothesis": "Showing reviews on the product page raises add-to-cart by at least 10% over the page without reviews.",
   "metrics": [{ "metric": "<add_to_cart metric id>", "expected_direction": "increase" }],
   "experiment_rollout": {
     "enabled": true,
     "rollout_percentage": 100,
     "feature_state_value": { "type": "string", "value": "control" },
     "multivariate_feature_state_values": [
-      { "multivariate_feature_option": "<reviews variation id>", "percentage_allocation": 33 },
-      { "multivariate_feature_option": "<local-proof variation id>", "percentage_allocation": 33 }
+      { "multivariate_feature_option": "<reviews variation id>", "percentage_allocation": 50 }
     ]
   }
 }
 ```
 
-Control gets the remaining 34%. Start it with `POST .../experiments/<id>/start/` (or **Launch** in the dashboard) and check its status is `running`.
+Control gets the other 50%. Start it with `POST .../experiments/<id>/start/` (or **Launch** in the dashboard) and check its status is `running`.
 
 While an experiment runs the flag is locked. Don't change the rollout mid-test: it can invalidate the result.
 
@@ -145,7 +143,7 @@ To refresh and read results from the CLI: `POST .../experiments/<id>/results/ref
 
 ```bash
 npm run traffic:sim -- --visitors=600
-npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13,local-proof:0.115
+npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13
 npm run traffic:sim -- --dry-run      # no Flagsmith calls
 ```
 
@@ -153,7 +151,7 @@ Each simulated shopper is a fresh identity (`sim-…`, trait `simulated = true`)
 
 ## Previewing a version
 
-- **Locally** (`npm run dev:web` only): add `?ff_product_trust_signal=reviews` (or `local-proof`, `control`) to a product page URL. Production builds ignore this, because it would show one version while Flagsmith records another.
+- **Locally** (`npm run dev:web` only): add `?ff_product_trust_signal=reviews` (or `control`) to a product page URL. Production builds ignore this, because it would show one version while Flagsmith records another.
 - **On the live site, for the demo video:** in Flagsmith, add an identity override for your own visitor ID (from `/api/experiments/config`) to force a version.
 
 ## Checking it works

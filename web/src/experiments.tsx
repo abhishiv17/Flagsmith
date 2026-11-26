@@ -21,7 +21,7 @@ export const FLAGS = {
 } as const;
 
 /** Variant labels as set on the multivariate flag in Flagsmith. Anything else means control. */
-export const TRUST_VARIANTS = ['reviews', 'local-proof'] as const;
+export const TRUST_VARIANTS = ['reviews'] as const;
 
 /**
  * Conversion events. Names must match the Flagsmith metrics exactly (case-sensitive); an event

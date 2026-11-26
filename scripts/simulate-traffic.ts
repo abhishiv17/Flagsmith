@@ -13,7 +13,7 @@
  *
  * Usage:
  *   npm run traffic:sim -- --visitors=600
- *   npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13,local-proof:0.115
+ *   npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13
  *   npm run traffic:sim -- --dry-run          # no Flagsmith calls; shows the plan
  * Needs FLAGSMITH_ENVIRONMENT_KEY (the same client-side key the store uses).
  */
@@ -31,7 +31,7 @@ const visitors = Number(arg('visitors') ?? 300);
 const concurrency = Math.max(1, Math.min(20, Number(arg('concurrency') ?? 8)));
 const dryRun = has('dry-run');
 /** Probability that a shopper who saw this version adds to cart. Assumed, see the note above. */
-const rates: Record<string, number> = { control: 0.1, reviews: 0.13, 'local-proof': 0.115 };
+const rates: Record<string, number> = { control: 0.1, reviews: 0.13 };
 for (const pair of (arg('rates') ?? '').split(',').filter(Boolean)) {
   const [k, v] = pair.split(':');
   if (k && v && Number.isFinite(Number(v))) rates[k] = Number(v);
@@ -57,7 +57,7 @@ const bump = (v: string) => (tally[v] ??= { exposed: 0, added: 0, started: 0, co
 async function shopper(): Promise<void> {
   const identity = `sim-${randomUUID()}`;
   if (dryRun) {
-    const v = ['control', 'reviews', 'local-proof'][Math.floor(Math.random() * 3)]!;
+    const v = Math.random() < 0.5 ? 'control' : 'reviews';
     act(v, () => {});
     return;
   }

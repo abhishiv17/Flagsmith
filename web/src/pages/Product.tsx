@@ -51,7 +51,7 @@ export function Product() {
   // Live on the retailer dashboard within seconds (presence.ts); the clickstream above keeps history.
   useViewPresence(loadedId);
   const together = useTogether(loadedId ? [loadedId] : [], city);
-  // Toggle Wars experiment (doc/experiment.md): which trust signal, if any, sits under the price.
+  // Toggle Wars experiment (doc/experiment.md): control vs reviews under the price.
   // Called here, on the product page only, because calling it records the exposure.
   const trust = useVariant(FLAGS.productTrustSignal, TRUST_VARIANTS);
   const [reviews, setReviews] = useReviews(loadedId, trust === 'reviews');
@@ -132,10 +132,11 @@ export function Product() {
           <span className="brand">{p.brand} · {p.sku}</span>
           <h1 className="pdp-title">{p.name}</h1>
           <p className="price price-lg">{inr(p.pricePaise)}</p>
-          {/* The experiment's trust signal. Control shows neither. */}
+          {/* The experiment: only the reviews version shows reviews. */}
           {trust === 'reviews' && <ReviewSummary data={reviews} />}
-          {/* Real orders only (ClickHouse, source 'live'): a claim we can stand behind. */}
-          {trust === 'local-proof' && together?.boughtWeek != null && together.boughtWeek >= 1 && (
+          {/* Real orders only (ClickHouse, source 'live'): a claim we can stand behind. Shown to
+              everyone, in both versions, so it isn't part of what's being tested. */}
+          {together?.boughtWeek != null && together.boughtWeek >= 2 && (
             <p className="bought-week"><span aria-hidden="true">🔥</span> {together.boughtWeek} bought in {cityName(city)} this week</p>
           )}
           {/* Who sells it: our own store first, then any partner shops in the city. */}
