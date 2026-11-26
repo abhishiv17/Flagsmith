@@ -38,6 +38,8 @@
     "payment:race": "tsx scripts/payment-race.ts",
     "demo:setup": "tsx scripts/demo-stock.ts",
     "sellers:seed": "tsx scripts/sellers-seed.ts",
+    "reviews:seed": "tsx scripts/reviews-seed.ts",
+    "traffic:sim": "tsx scripts/simulate-traffic.ts",
     "prices:seed": "tsx scripts/price-spread-seed.ts",
     "clickhouse:seed": "tsx scripts/seed-clickhouse.ts",
     "products:more": "tsx scripts/more-products.ts",

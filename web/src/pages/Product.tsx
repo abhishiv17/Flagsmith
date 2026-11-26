@@ -16,6 +16,8 @@ import { Similar } from '../components/Similar';
 import { PriceAcrossCities } from '../components/PriceAcrossCities';
 import { CouponBanner } from '../components/CouponBanner';
 import { track } from '../track';
+import { FLAGS, TRUST_VARIANTS, useVariant } from '../experiments';
+import { ReviewSummary, ReviewsSection, useReviews } from '../components/Reviews';
 
 /** Product detail from PostgreSQL: authoritative price + stock in every city (doc/06 §2). */
 export function Product() {
@@ -49,6 +51,10 @@ export function Product() {
   // Live on the retailer dashboard within seconds (presence.ts); the clickstream above keeps history.
   useViewPresence(loadedId);
   const together = useTogether(loadedId ? [loadedId] : [], city);
+  // Toggle Wars experiment (doc/experiment.md): which trust signal, if any, sits under the price.
+  // Called here, on the product page only, because calling it records the exposure.
+  const trust = useVariant(FLAGS.productTrustSignal, TRUST_VARIANTS);
+  const [reviews, setReviews] = useReviews(loadedId, trust === 'reviews');
   // "Recently viewed": once per product opened.
   useEffect(() => {
     if (p && loadedId !== null) noteViewed(p);
@@ -126,8 +132,10 @@ export function Product() {
           <span className="brand">{p.brand} · {p.sku}</span>
           <h1 className="pdp-title">{p.name}</h1>
           <p className="price price-lg">{inr(p.pricePaise)}</p>
+          {/* The experiment's trust signal. Control shows neither. */}
+          {trust === 'reviews' && <ReviewSummary data={reviews} />}
           {/* Real orders only (ClickHouse, source 'live'): a claim we can stand behind. */}
-          {together?.boughtWeek != null && together.boughtWeek >= 2 && (
+          {trust === 'local-proof' && together?.boughtWeek != null && together.boughtWeek >= 1 && (
             <p className="bought-week"><span aria-hidden="true">🔥</span> {together.boughtWeek} bought in {cityName(city)} this week</p>
           )}
           {/* Who sells it: our own store first, then any partner shops in the city. */}
@@ -216,6 +224,7 @@ export function Product() {
       </div>
       {hereQty > 0 && !blocked && <BoughtTogether product={p} city={city} data={together} />}
       <ProductDetails p={p} />
+      {trust === 'reviews' && <ReviewsSection productId={p.productId} city={city} data={reviews} onChange={setReviews} />}
       {/* doc/19: real alternatives on the shelf here, from OpenSearch more_like_this. */}
       <Similar productId={p.productId} city={city}
         title={hereQty > 0 && !blocked ? `Similar, in stock in ${cityName(city)}` : `Can’t get this one? Similar, in stock in ${cityName(city)} now`} />

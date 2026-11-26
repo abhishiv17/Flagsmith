@@ -18,6 +18,7 @@ import { retailer } from './routes/retailer.js';
 import { accounts } from './routes/accounts.js';
 import { shopDashboard } from './routes/shop-dashboard.js';
 import { experiments } from './routes/experiments.js';
+import { reviews } from './routes/reviews.js';
 
 /**
  * The Express app. Talks to PostgreSQL and OpenSearch only, never Kafka (doc/03 §2).
@@ -61,7 +62,7 @@ export function createApp(opts: { staticDir?: string } = {}) {
     res.status(Object.values(status).every((s) => s === 'up') ? 200 : 503).json({ ...status, valkey: await cacheHealth() });
   });
 
-  app.use('/api', catalog, shop, ops, paymentsTest, track, analytics, retailer, shopDashboard, accounts, experiments);
+  app.use('/api', catalog, shop, ops, paymentsTest, track, analytics, retailer, shopDashboard, accounts, experiments, reviews);
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No such endpoint' } });

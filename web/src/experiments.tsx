@@ -36,6 +36,8 @@ export const EVENTS = {
   checkoutCompleted: 'checkout_completed',
   /** Sold out here, so the shopper asked to be told when it's back. */
   backInStockAlert: 'back_in_stock_alert',
+  /** Posted a review (reviews version only). Carries the star rating as `value`. */
+  reviewSubmitted: 'review_submitted',
 } as const;
 
 type Config = {
@@ -93,6 +95,12 @@ export function ExperimentsProvider({ children }: { children: ReactNode }) {
  */
 export function useVariant<V extends string>(flag: string, variants: readonly V[]): V | 'control' {
   const f = useExperiment(flag);
+  // Local development only: ?ff_<flag>=<variant> previews a version without Flagsmith. Never in a
+  // production build, where it would show one version while Flagsmith records another.
+  if (import.meta.env.DEV) {
+    const forced = new URLSearchParams(window.location.search).get(`ff_${flag}`);
+    if (forced === 'control' || (variants as readonly string[]).includes(forced ?? '')) return forced as V | 'control';
+  }
   if (!f?.enabled) return 'control';
   const label = f.variant ?? (typeof f.value === 'string' ? f.value : undefined);
   return label && (variants as readonly string[]).includes(label) ? (label as V) : 'control';
