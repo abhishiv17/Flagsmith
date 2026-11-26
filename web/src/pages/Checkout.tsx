@@ -6,6 +6,7 @@ import { payWithRazorpay, type PaymentHandle } from '../razorpay';
 import { PartnerOffers } from '../components/PartnerOffers';
 import { scrollToTop } from '../motion';
 import { forgetCoupon, rememberCoupon, savedCoupon } from '../coupon';
+import { EVENTS, trackConversion } from '../experiments';
 
 type Phase = 'idle' | 'reserving' | 'paying' | 'confirming';
 
@@ -150,6 +151,7 @@ export function Checkout() {
   /** Reserve → pay → confirm, or release on close. Shared by cart and partner purchases. */
   const run = async (reserve: () => Promise<CheckoutResponse>, onReleased: () => void, onConfirmed?: () => Promise<void>) => {
     if (submitting) return;
+    trackConversion(EVENTS.checkoutStarted); // pressed "Place order"; completed is tracked below
     setPhase('reserving');
     setError(null);
     setInfo(null);
@@ -159,6 +161,7 @@ export function Checkout() {
       if (r.status !== 'pending_payment' || !r.payment) {
         await onConfirmed?.();
         if (r.discountPaise) forgetCoupon(); // spent
+        trackConversion(EVENTS.checkoutCompleted, r.totalPaise / 100);
         navigate(`/orders/${r.orderId}`);
         return;
       }
@@ -188,6 +191,7 @@ export function Checkout() {
       });
       await onConfirmed?.();
       if (r.discountPaise) forgetCoupon(); // spent
+      trackConversion(EVENTS.checkoutCompleted, r.totalPaise / 100); // value in rupees, for a revenue metric
       navigate(`/orders/${r.orderId}`);
     } catch (err) {
       setPhase('idle');

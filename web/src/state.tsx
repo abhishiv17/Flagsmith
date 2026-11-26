@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { beat } from './presence';
+import { EVENTS, trackConversion } from './experiments';
 import { api, ApiError, del, patch, post, CITIES, type Account, type BackInStockAlert, type Cart, type CityCode, type RetailerShop } from './api';
 
 /* ---------------- City ---------------- */
@@ -211,6 +212,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setCart(await post<Cart>('/cart/items', { city, productId, qty }));
         beat(productId, 'cart', 0); // the retailer dashboard's "Live now"
+        trackConversion(EVENTS.addToCart); // primary metric of the product-page experiment
         return true;
       } catch (e) {
         // Someone else holds it, it's being paid for, or it's sold out: explain and offer partners.

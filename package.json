@@ -51,6 +51,7 @@
     "load:test": "tsx scripts/load-test.ts"
   },
   "dependencies": {
+    "@flagsmith/flagsmith": "12.4.0",
     "@huggingface/transformers": "^4.3.2",
     "@opensearch-project/opensearch": "^3.10.0",
     "@vercel/functions": "3.10.5",

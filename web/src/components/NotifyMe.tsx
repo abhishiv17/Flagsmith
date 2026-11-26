@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cityName } from '../api';
 import { useAccount } from '../state';
+import { EVENTS, trackConversion } from '../experiments';
 
 /**
  * "Notify me when it's back in <city>" (doc/17). Guests are sent to sign in first (an alert needs
@@ -41,6 +42,7 @@ export function NotifyMe({ productId, city, name }: { productId: number; city: s
           setError(null);
           try {
             await addAlert(productId, city);
+            trackConversion(EVENTS.backInStockAlert); // sold out, but the shopper didn't leave empty-handed
           } catch (e) {
             setError((e as Error).message);
           } finally {
