@@ -16,7 +16,8 @@
  *
  * Environments:  prod → FLAGSMITH_ENVIRONMENT_KEY (the live store)
  *                sim  → FLAGSMITH_SIM_ENVIRONMENT_KEY (simulated shoppers only)
- * Auth:          FLAGSMITH_API_KEY, an Organisation API key (Organisation settings → API keys).
+ * Auth:          the Flagsmith CLI's login (run `flagsmith login` once; requests go through
+ *                `flagsmith api`), or FLAGSMITH_API_KEY, an Organisation API key, if set.
  *                Admin access: keep it in .env, never in the browser, never in git.
  * Self-hosted:   FLAGSMITH_ADMIN_API_URL (default https://api.flagsmith.com/).
  *
@@ -26,6 +27,9 @@
  */
 import 'dotenv/config';
 import { mkdirSync, writeFileSync, appendFileSync, existsSync } from 'node:fs';
+import { execFile } from 'node:child_process';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { EXPERIMENT, METRICS, type MetricSpec } from '../server/lib/experiment-spec.js';
 
@@ -65,6 +69,38 @@ class ApiFailure extends Error {
   }
 }
 
+/** The Flagsmith CLI, if installed: on PATH, or where its installer puts it. */
+function cliPath(): string | null {
+  if (process.env.FLAGSMITH_CLI) return process.env.FLAGSMITH_CLI;
+  const local = join(homedir(), '.local', 'bin', process.platform === 'win32' ? 'flagsmith.exe' : 'flagsmith');
+  return existsSync(local) ? local : 'flagsmith';
+}
+
+/** Send the request through `flagsmith api`, which applies the CLI's login (flagsmith login). */
+function viaCli(method: 'GET' | 'POST', path: string, body?: unknown): Promise<Json> {
+  const argv = ['api', path, '-X', method];
+  if (process.env.FLAGSMITH_ADMIN_API_URL?.trim()) argv.push('--api-url', BASE.replace(/\/$/, ''));
+  if (body !== undefined) argv.push('--input', '-');
+  return new Promise((resolve, reject) => {
+    const child = execFile(cliPath()!, argv, { maxBuffer: 20 * 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
+      if (err) {
+        const text = `${stderr}${stdout}`.trim();
+        const status = Number(text.match(/\b([45]\d\d)\b/)?.[1] ?? 0);
+        if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+          return reject(new Error('Flagsmith CLI not found. Install it (doc/flagsmith.md) or set FLAGSMITH_API_KEY.'));
+        }
+        return reject(new ApiFailure(status, text, `${method} ${path} → ${text.slice(0, 400)}`));
+      }
+      try {
+        resolve(stdout.trim() ? JSON.parse(stdout) : null);
+      } catch {
+        resolve(stdout.trim());
+      }
+    });
+    if (body !== undefined) child.stdin?.end(JSON.stringify(body));
+  });
+}
+
 async function call(method: 'GET' | 'POST', path: string, body?: unknown): Promise<Json> {
   if (dryRun) {
     console.log(`\n→ ${method} ${BASE}${path}`);
@@ -72,7 +108,8 @@ async function call(method: 'GET' | 'POST', path: string, body?: unknown): Promi
     return null;
   }
   const apiKey = process.env.FLAGSMITH_API_KEY?.trim();
-  if (!apiKey) fail('FLAGSMITH_API_KEY (Organisation API key) is not set in .env');
+  // No Organisation API key: use the Flagsmith CLI's own login instead.
+  if (!apiKey) return viaCli(method, path, body);
   const res = await fetch(BASE + path, {
     method,
     headers: { Authorization: `Api-Key ${apiKey}`, 'Content-Type': 'application/json', Accept: 'application/json' },

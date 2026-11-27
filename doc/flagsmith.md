@@ -74,7 +74,7 @@ Flagsmith counts a conversion only after that identity's first exposure, so an a
    - **Production**: the live store. Only real shoppers.
    - **Simulation**: only simulated shoppers (`npm run traffic:sim`). It has its own copy of the flag, metrics and experiment, so simulated traffic can never mix into the real result.
 2. In **each** environment, **Environment settings → Warehouse:** enable the managed **Flagsmith** warehouse. Experiments can't be created, and events are rejected, until a warehouse is connected. The first events can take a few hours to appear, so do this early.
-3. Copy each environment's **client-side** SDK key, and create an **Organisation API key** (Organisation settings → API keys) for `npm run exp`.
+3. Copy each environment's **client-side** SDK key. Install the [Flagsmith CLI](https://docs.flagsmith.com/integrating-with-flagsmith/CLI) v2 and run `flagsmith login` once: `npm run exp` sends its requests through `flagsmith api` with that login.
 
 ### 2. Tell StockHop about it
 Set this on the web app (Aiven App Runtime variables, or `.env` locally):
@@ -82,7 +82,7 @@ Set this on the web app (Aiven App Runtime variables, or `.env` locally):
 ```bash
 FLAGSMITH_ENVIRONMENT_KEY=<Production client-side key>     # web app + local .env
 FLAGSMITH_SIM_ENVIRONMENT_KEY=<Simulation client-side key> # local .env only (traffic:sim)
-FLAGSMITH_API_KEY=<Organisation API key>                   # local .env only (npm run exp); never on the web app
+# FLAGSMITH_API_KEY=<Organisation API key>                 # optional: npm run exp uses the CLI login by default
 ```
 
 Only `FLAGSMITH_ENVIRONMENT_KEY` goes on the deployed web app. The environment key is public by design: it is sent to every browser. It is served at runtime, so changing it needs a restart, not a rebuild. `FLAGSMITH_API_URL` and `FLAGSMITH_EVENTS_URL` are only for self-hosted Flagsmith.
