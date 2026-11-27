@@ -44,9 +44,10 @@ const BASE = (process.env.FLAGSMITH_ADMIN_API_URL?.trim() || 'https://api.flagsm
 
 type Json = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+/** Stops the command. Thrown, not process.exit(), so a CLI child process can close cleanly first. */
+class Stop extends Error {}
 function fail(msg: string): never {
-  console.error(`\n✗ ${msg}`);
-  process.exit(1);
+  throw new Stop(msg);
 }
 
 function envKey(): string {
@@ -82,7 +83,11 @@ function viaCli(method: 'GET' | 'POST', path: string, body?: unknown): Promise<J
   if (process.env.FLAGSMITH_ADMIN_API_URL?.trim()) argv.push('--api-url', BASE.replace(/\/$/, ''));
   if (body !== undefined) argv.push('--input', '-');
   return new Promise((resolve, reject) => {
-    const child = execFile(cliPath()!, argv, { maxBuffer: 20 * 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
+    // The CLI reads FLAGSMITH_* from its environment. dotenv loads ours, some empty and some with
+    // other meanings (FLAGSMITH_API_URL is the SDK URL here), so the CLI gets none of them and
+    // uses its own login.
+    const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('FLAGSMITH_')));
+    const child = execFile(cliPath()!, argv, { env, maxBuffer: 20 * 1024 * 1024, windowsHide: true }, (err, stdout, stderr) => {
       if (err) {
         const text = `${stderr}${stdout}`.trim();
         const status = Number(text.match(/\b([45]\d\d)\b/)?.[1] ?? 0);
@@ -309,8 +314,12 @@ if (!run) {
   process.exit(cmd === 'help' ? 0 : 1);
 }
 run().catch((e) => {
+  let msg = e instanceof Error ? e.message : String(e);
   if (e instanceof ApiFailure && (e.status === 401 || e.status === 403)) {
-    fail(`${e.message}\nCheck FLAGSMITH_API_KEY is an Organisation API key with access to this project.`);
+    msg += process.env.FLAGSMITH_API_KEY?.trim()
+      ? '\nCheck FLAGSMITH_API_KEY is an Organisation API key with access to this project.'
+      : '\nRun `flagsmith login` (or `flagsmith auth status` to check it).';
   }
-  fail(e instanceof Error ? e.message : String(e));
+  console.error(`\n✗ ${msg}`);
+  process.exitCode = 1;
 });
