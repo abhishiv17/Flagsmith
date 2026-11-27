@@ -5,7 +5,7 @@ import { z } from 'zod';
 export class HttpError extends Error {
   constructor(
     public status: number,
-    public code: 'VALIDATION' | 'NOT_FOUND' | 'OUT_OF_STOCK' | 'CART_EMPTY' | 'SEARCH_UNAVAILABLE' | 'UNAUTHORIZED' | 'SIGN_IN_REQUIRED' | 'INTERNAL' | 'COUPON_INVALID' | 'BUSY' | 'ALREADY_REVIEWED',
+    public code: 'VALIDATION' | 'NOT_FOUND' | 'OUT_OF_STOCK' | 'CART_EMPTY' | 'SEARCH_UNAVAILABLE' | 'UNAUTHORIZED' | 'SIGN_IN_REQUIRED' | 'INTERNAL' | 'COUPON_INVALID' | 'BUSY' | 'ALREADY_REVIEWED' | 'RATE_LIMITED',
     message: string,
     public details?: unknown,
   ) {

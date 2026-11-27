@@ -3,11 +3,15 @@ import { z } from 'zod';
 import { getPool } from '../lib/db.js';
 import { CityCode, HttpError, parse } from '../lib/http.js';
 import { visitorId } from '../domain/activity.js';
+import { RateLimiter } from '../lib/rate-limit.js';
 
 /**
  * Product reviews: the "reviews" version of the product_trust_signal experiment (doc/experiment.md).
  *   GET  /api/products/:id/reviews  average, count and the latest reviews
  *   POST /api/products/:id/reviews  one review per browser per product
+ *
+ * The store link is public during the experiment, so posting is rate limited per browser and per
+ * IP address. Otherwise one person could flood the reviews version and skew what it shows.
  */
 export const reviews = Router();
 
@@ -70,10 +74,19 @@ const NewReview = z.object({
 /** Drops anything that looks like contact details: reviews are public. */
 const scrub = (s: string) => s.replace(/\S+@\S+/g, '[email]').replace(/\+?\d[\d\s-]{6,}\d/g, '[number]');
 
+const HOUR = 60 * 60 * 1000;
+const perBrowser = new RateLimiter({ limit: 5, windowMs: HOUR });
+const perAddress = new RateLimiter({ limit: 20, windowMs: HOUR });
+
 reviews.post('/products/:id/reviews', async (req, res) => {
   const { id } = parse(Params, req.params);
   const r = parse(NewReview, req.body);
   const sid = req.cookies.sh_sid as string;
+  const wait = perBrowser.hit(visitorId(sid)) || perAddress.hit(req.ip ?? 'unknown');
+  if (wait) {
+    res.set('Retry-After', String(wait));
+    throw new HttpError(429, 'RATE_LIMITED', 'You’ve posted a lot of reviews in the last hour. Try again later.');
+  }
   const ins = await getPool().query(
     `INSERT INTO product_reviews (product_id, rating, body, author_name, city_code, author_key)
      SELECT $1, $2, $3, $4, $5, $6 WHERE EXISTS (SELECT 1 FROM products WHERE id = $1)
