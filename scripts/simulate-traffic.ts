@@ -11,11 +11,16 @@
  * how much traffic a given lift needs. It says nothing about real shoppers. Always say which
  * numbers came from simulated traffic.
  *
+ * Simulated shoppers go to a SEPARATE Flagsmith environment ("Simulation", key in
+ * FLAGSMITH_SIM_ENVIRONMENT_KEY) with its own copy of the flag, metrics and experiment. Sending them
+ * to the environment the live store uses would mix them into the real shoppers' result, so the
+ * script refuses to run when the two keys match.
+ *
  * Usage:
  *   npm run traffic:sim -- --visitors=600
  *   npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13
  *   npm run traffic:sim -- --dry-run          # no Flagsmith calls; shows the plan
- * Needs FLAGSMITH_ENVIRONMENT_KEY (the same client-side key the store uses).
+ * Needs FLAGSMITH_SIM_ENVIRONMENT_KEY (the Simulation environment's client-side key).
  */
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
@@ -44,10 +49,19 @@ if (!Number.isInteger(visitors) || visitors < 1 || visitors > 5000) {
   console.error('--visitors must be 1 … 5000');
   process.exit(1);
 }
-const environmentID = process.env.FLAGSMITH_ENVIRONMENT_KEY?.trim();
-if (!environmentID && !dryRun) {
-  console.error('Set FLAGSMITH_ENVIRONMENT_KEY (or use --dry-run).');
-  process.exit(1);
+const environmentID = process.env.FLAGSMITH_SIM_ENVIRONMENT_KEY?.trim();
+const storeKey = process.env.FLAGSMITH_ENVIRONMENT_KEY?.trim();
+if (!dryRun) {
+  if (!environmentID) {
+    console.error('Set FLAGSMITH_SIM_ENVIRONMENT_KEY to the Simulation environment’s client-side key (or use --dry-run).');
+    console.error('Simulated shoppers never go to the environment the live store uses: see doc/flagsmith.md.');
+    process.exit(1);
+  }
+  if (environmentID === storeKey) {
+    console.error('FLAGSMITH_SIM_ENVIRONMENT_KEY is the same as FLAGSMITH_ENVIRONMENT_KEY (the live store).');
+    console.error('Simulated shoppers would be mixed into the real result. Use the Simulation environment’s key.');
+    process.exit(1);
+  }
 }
 
 type Tally = { exposed: number; added: number; started: number; completed: number; revenue: number };

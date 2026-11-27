@@ -40,6 +40,7 @@
     "sellers:seed": "tsx scripts/sellers-seed.ts",
     "reviews:seed": "tsx scripts/reviews-seed.ts",
     "traffic:sim": "tsx scripts/simulate-traffic.ts",
+    "exp": "tsx scripts/experiment.ts",
     "prices:seed": "tsx scripts/price-spread-seed.ts",
     "clickhouse:seed": "tsx scripts/seed-clickhouse.ts",
     "products:more": "tsx scripts/more-products.ts",
