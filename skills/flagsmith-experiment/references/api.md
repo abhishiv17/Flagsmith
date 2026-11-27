@@ -55,7 +55,17 @@ Paths are relative to the Flagsmith API (`flagsmith api` adds the host and crede
 ## Results
 
 - `POST api/v1/environments/$ENV/experiments/<id>/results/refresh/`: recompute. At most once every 5 minutes (a 429 means wait; read the last results).
-- `GET api/v1/environments/$ENV/experiments/<id>/results/`: the current results.
+- `GET api/v1/environments/$ENV/experiments/<id>/results/`: the current results, shaped like this (trimmed):
+
+```json
+{ "results": { "as_of": "…", "is_final": false, "payload": {
+  "srm_p_value": null,
+  "metrics": [ { "metric_id": 1516,
+    "variants":  { "control": { "n": 2007, "sum": 216 }, "reviews": { "n": 2043, "sum": 268 } },
+    "inference": { "reviews": { "lift": 0.219, "ci_low": 0.014, "ci_high": 0.424, "chance_to_win": 0.982 } } } ] } } }
+```
+
+`n` is identities exposed, and `sum` is conversions (occurrence) or the summed `value` (sum). Rate = `sum / n`. `inference` has one entry per non-control variant. `srm_p_value` below 0.001 means the split is broken.
 
 How to read them:
 - **Exposures** are counted once per identity, in the first variant it saw. Identities seen in more than one variant are quarantined.

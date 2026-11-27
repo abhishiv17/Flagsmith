@@ -87,9 +87,9 @@ Ask the user to load the page as two identities, or send test traffic. Wait abou
 ### 9. Results
 ```bash
 flagsmith api api/v1/environments/$ENV/experiments/<id>/results/refresh/ -X POST   # max once per 5 minutes
-flagsmith api api/v1/environments/$ENV/experiments/<id>/results/
+flagsmith api api/v1/environments/$ENV/experiments/<id>/results/ --jq '.results | {as_of, is_final, srm: .payload.srm_p_value, metrics: [.payload.metrics[] | {metric_id, n: (.variants | map_values({n, sum})), vs_control: .inference}]}'
 ```
-On the first read, look at the JSON's shape, then reuse a narrow `--jq` for later reads. Report in at most 6 lines: exposures per variant (check the split is roughly even; a sample-ratio warning means don't act), the primary metric's rate per variant, lift, the 95% credible interval, win probability, and the guardrails. "Collecting data" until every arm has 50 identities and 5 conversions.
+`metric_id` maps to the metric ids from step 4. `vs_control.<variant>` holds `lift`, `ci_low`, `ci_high` and `chance_to_win` (0 to 1). Report in at most 6 lines: exposures per variant (check the split is roughly even; a sample-ratio warning means don't act), the primary metric's rate per variant, lift, the 95% credible interval, win probability, and the guardrails. "Collecting data" until every arm has 50 identities and 5 conversions.
 
 ### 10. Decide and roll out
 Apply the rule from step 1 word for word. Then the user ends it in the dashboard: **Experiment → End experiment →** choose what the flag serves (the winner, or control). That serves the winner to everyone with the same flag, no deploy needed. Flagsmith documents no API for this step, so give the user those clicks rather than guessing an endpoint. Finally, offer a clean-up patch that removes the losing code path and the flag check, and remind the user to delete the flag once the change is permanent.
