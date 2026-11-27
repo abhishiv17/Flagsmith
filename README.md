@@ -40,10 +40,10 @@ Data freeze Sun 29 Nov, 12:00 IST. Real and simulated shoppers are separate Flag
 |---|---|---|---|---|---|
 | Real shoppers | control | _ | _ | — | — |
 | Real shoppers | reviews | _ | _ | _ | _ |
-| Simulated (rates are inputs) | control | _ | _ | — | — |
-| Simulated (rates are inputs) | reviews | _ | _ | _ | _ |
+| Simulated (rates are inputs) | control | 2,007 | 10.8% | — | — |
+| Simulated (rates are inputs) | reviews | 2,043 | 13.1% | +21.9% (95% CI +1.4% to +42.4%) | 98.2% |
 
-**Decision:** _to be filled in at the freeze, by the rule above._ A 10% lift needs about 15,000 shoppers per version, and a few days of real traffic gives far fewer, so "inconclusive, keep control" is the likely and honest outcome. The simulated run shows the whole pipeline, and Flagsmith calling a lift we set. Details and sample-size maths: [doc/experiment.md](doc/experiment.md#result).
+**Decision (real shoppers):** _to be filled in at the freeze, by the rule above._ **Simulated run (27 Nov, 4,050 shoppers):** the simulator was told reviews convert at 13% vs 10%. Flagsmith found it, with a 98.2% chance to beat control on add-to-cart and revenue +58% (98.0%), so the rule reads "ship reviews". That shows the pipeline works end to end. It is not evidence about real shoppers ([snapshot](doc/results.md)). A 10% lift needs about 15,000 shoppers per version, and a few days of real traffic gives far fewer, so "inconclusive, keep control" is the likely and honest outcome. The simulated run shows the whole pipeline, and Flagsmith calling a lift we set. Details and sample-size maths: [doc/experiment.md](doc/experiment.md#result).
 
 ## How we use Flagsmith
 

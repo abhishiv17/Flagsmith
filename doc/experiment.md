@@ -74,9 +74,14 @@ Data freeze: **Sun 29 Nov 2026, 12:00 IST**. Numbers from the Flagsmith experime
 |---|---|---|---|---|---|---|
 | Real shoppers | control | _ | _ | — | — | _ |
 | Real shoppers | reviews | _ | _ | _ | _ | _ |
-| Simulated (rates are inputs) | control | _ | _ | — | — | _ |
-| Simulated (rates are inputs) | reviews | _ | _ | _ | _ | _ |
+| Simulated (rates are inputs) | control | 2,007 | 10.8% | — | — | ₹1,39,326 |
+| Simulated (rates are inputs) | reviews | 2,043 | 13.1% | +21.9% (95% CI +1.4% to +42.4%) | 98.2% | ₹2,24,604 (+58.4%, 98.0%) |
 
 **Decision (real shoppers):** _ship reviews / keep control (inconclusive)_, by the rule above. Rolled out with the same flag at _time_.
 
-**What the simulated run shows:** _bucketing split, exposures, events and Flagsmith's call on a lift we set._
+**What the simulated run shows** (27 Nov 2026, Simulation environment, 4,050 shoppers, input rates 10% vs 13%):
+- **Bucketing:** 2,007 control vs 2,043 reviews, an even split.
+- **Exposures and events:** every simulated shopper was enrolled, and all three conversion events arrived and were joined to the right identity.
+- **The statistics:** Flagsmith recovered the lift we put in (+21.9% measured vs +30% input, with an interval that contains it) and called it at a 98.2% chance to beat control. The rule reads "ship reviews".
+
+This is a test of the machinery, not a finding about shoppers: we chose the rates. Full table and raw response: [results.md](results.md).

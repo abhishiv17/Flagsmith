@@ -268,10 +268,22 @@ async function results() {
   if (dryRun) return;
 
   const all = leaves(r);
-  const shown = all.filter(([p]) => INTERESTING.test(p));
-  console.log(`\n${EXPERIMENT.name} · ${envName === 'sim' ? 'SIMULATED traffic' : 'real shoppers'} · experiment ${id}`);
-  for (const [p, v] of shown.slice(0, 120)) console.log(`  ${p} = ${JSON.stringify(v)}`);
-  if (shown.length > 120) console.log(`  … ${shown.length - 120} more (use --write for the full JSON)`);
+  const label = envName === 'sim' ? 'SIMULATED traffic' : 'real shoppers';
+  console.log(`\n${EXPERIMENT.name} · ${label} · experiment ${id} · as of ${r?.results?.as_of ?? '?'}${r?.results?.is_final ? ' (final)' : ''}`);
+  const table = summarise(r, ctx);
+  if (!table) {
+    // Unknown response shape: show the interesting leaves rather than guess.
+    const shown = all.filter(([p]) => INTERESTING.test(p));
+    for (const [p, v] of shown.slice(0, 120)) console.log(`  ${p} = ${JSON.stringify(v)}`);
+    if (shown.length > 120) console.log(`  … ${shown.length - 120} more (use --write for the full JSON)`);
+  } else {
+    console.log('\n' + table.markdown);
+    console.log(`\nDecision rule: ${EXPERIMENT.decisionRule}`);
+    console.log(`→ ${table.decision}`);
+    if (envName === 'sim') console.log('\nSimulated traffic: its conversion rates are inputs we chose. This proves the pipeline, not a finding.');
+    if (has('write')) writeSnapshot(r, id, ctx, table);
+    return;
+  }
 
   const wins = all.filter(([p, v]) => WIN.test(p.split('.').pop() ?? '') && typeof v === 'number');
   console.log(`\nDecision rule: ${EXPERIMENT.decisionRule}`);
@@ -302,6 +314,72 @@ async function results() {
     );
     ok(`saved ${file} and appended doc/results.md`);
   }
+}
+
+type Summary = { markdown: string; decision: string };
+
+const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+const signed = (x: number) => `${x >= 0 ? '+' : ''}${(x * 100).toFixed(1)}%`;
+const money = (x: number) => `₹${Math.round(x).toLocaleString('en-IN')}`;
+
+/**
+ * Results as a table, per metric and variant. Response shape (Flagsmith Cloud, Nov 2026):
+ * results.payload.metrics[] = { metric_id, variants: { <v>: { n, sum } }, inference: { <v>: { lift,
+ * ci_low, ci_high, chance_to_win } } }, plus results.payload.srm_p_value. Returns null for any
+ * other shape, so the caller falls back to printing the raw fields.
+ */
+function summarise(r: Json, ctx: Ctx): Summary | null {
+  const metrics: Json[] | undefined = r?.results?.payload?.metrics;
+  if (!Array.isArray(metrics) || !metrics.length || !metrics[0]?.variants) return null;
+  const nameOf = (mid: number) => ctx.metrics.find((m) => m.id === mid) ?? null;
+  const rows = ['| Metric | Version | Shoppers | Result | Lift vs control | 95% credible interval | Chance to beat control |', '|---|---|---|---|---|---|---|'];
+  let primary: { win: number; lift: number } | null = null;
+  let revenueWorse = false;
+  for (const m of metrics) {
+    const def = nameOf(m.metric_id);
+    const isSum = def?.aggregation === 'sum' || def?.aggregation === 'mean';
+    const name = def?.name ?? `metric ${m.metric_id}`;
+    for (const v of [EXPERIMENT.control, ...EXPERIMENT.variants] as string[]) {
+      const s = m.variants?.[v];
+      if (!s) continue;
+      const result = isSum ? `${money(s.sum)} total` : `${pct(s.n ? s.sum / s.n : 0)} (${s.sum})`;
+      const inf = m.inference?.[v];
+      const cells = inf
+        ? [signed(inf.lift), `${signed(inf.ci_low)} to ${signed(inf.ci_high)}`, pct(inf.chance_to_win)]
+        : ['—', '—', '—'];
+      rows.push(`| ${name} | ${v} | ${s.n} | ${result} | ${cells.join(' | ')} |`);
+      if (inf && def?.definition?.event === 'add_to_cart' && def.aggregation === 'occurrence') primary = { win: inf.chance_to_win, lift: inf.lift };
+      if (inf && def?.name === 'Revenue' && inf.lift < 0 && inf.chance_to_win < 0.5) revenueWorse = true;
+    }
+  }
+  const srm = r.results.payload.srm_p_value;
+  const srmLine = typeof srm === 'number' && srm < 0.001 ? '\n\n⚠ Sample-ratio mismatch (p < 0.001): do not act on these results.' : '';
+  let decision: string;
+  if (!primary) decision = 'No add_to_cart result yet (collecting data).';
+  else if (srmLine) decision = 'Hold: the split is uneven, so the result is not trustworthy.';
+  else if (primary.win >= EXPERIMENT.winProbabilityToShip && !revenueWorse)
+    decision = `Ship reviews: ${pct(primary.win)} chance to beat control on add_to_cart (lift ${signed(primary.lift)}), revenue not worse.`;
+  else
+    decision = `Keep control (inconclusive): ${pct(primary.win)} chance to beat control on add_to_cart, below the 95% bar${revenueWorse ? ', and revenue is worse' : ''}.`;
+  return { markdown: rows.join('\n') + srmLine, decision };
+}
+
+function writeSnapshot(r: Json, id: unknown, ctx: Ctx, table: Summary) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  mkdirSync('doc/results', { recursive: true });
+  const file = `doc/results/${envName}-${stamp}.json`;
+  writeFileSync(file, JSON.stringify(r, null, 2) + '\n');
+  if (!existsSync('doc/results.md')) {
+    writeFileSync('doc/results.md', '# Experiment results log\n\nSnapshots written by `npm run exp -- results --write`. Real and simulated shoppers are separate Flagsmith environments. Simulated conversion rates are inputs we chose: they prove the pipeline, not a finding.\n');
+  }
+  const rel = file.replace('doc/', '');
+  appendFileSync(
+    'doc/results.md',
+    `\n## ${r?.results?.as_of ?? new Date().toISOString()} · ${envName === 'sim' ? 'Simulation (simulated shoppers)' : 'Production (real shoppers)'}\n\n` +
+      `Experiment ${id}, status ${ctx.experiment?.status ?? 'unknown'}${r?.results?.is_final ? ', final' : ''}. Raw response: [${rel}](${rel})\n\n` +
+      `${table.markdown}\n\n**Decision rule:** ${table.decision}\n`,
+  );
+  ok(`saved ${file} and appended doc/results.md`);
 }
 
 const HELP = `Usage: npm run exp -- <check|setup|start|results> [--env=prod|sim] [--dry-run] [--yes] [--write]

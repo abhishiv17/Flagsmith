@@ -1,0 +1,198 @@
+{
+  "results": {
+    "as_of": "2026-11-27T16:01:24.311256Z",
+    "last_error_at": null,
+    "refresh_requested_at": "2026-11-27T16:01:24.258043Z",
+    "payload": {
+      "metrics": [
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 216,
+              "sum_squares": 216
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 268,
+              "sum_squares": 268
+            }
+          },
+          "inference": {
+            "reviews": {
+              "lift": 0.21887746777614614,
+              "ci_low": 0.013692885525600634,
+              "ci_high": 0.4240620500266916,
+              "chance_to_win": 0.981725260003504
+            }
+          },
+          "metric_id": 1516,
+          "conversions_timeseries": {
+            "points": [
+              {
+                "bucket": "2026-11-27T15:00:00+00:00",
+                "converted_identities": {
+                  "control": 216,
+                  "reviews": 268
+                }
+              }
+            ],
+            "granularity": "hour"
+          }
+        },
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 97,
+              "sum_squares": 97
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 115,
+              "sum_squares": 115
+            }
+          },
+          "inference": {
+            "reviews": {
+              "lift": 0.16467596166946732,
+              "ci_low": -0.14180548125075285,
+              "ci_high": 0.47115740458968747,
+              "chance_to_win": 0.8538549204519255
+            }
+          },
+          "metric_id": 1517,
+          "conversions_timeseries": {
+            "points": [
+              {
+                "bucket": "2026-11-27T15:00:00+00:00",
+                "converted_identities": {
+                  "control": 97,
+                  "reviews": 115
+                }
+              }
+            ],
+            "granularity": "hour"
+          }
+        },
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 74,
+              "sum_squares": 74
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 96,
+              "sum_squares": 96
+            }
+          },
+          "inference": {
+            "reviews": {
+              "lift": 0.2744374330277412,
+              "ci_low": -0.10399982140042424,
+              "ci_high": 0.6528746874559066,
+              "chance_to_win": 0.9223908293091528
+            }
+          },
+          "metric_id": 1518,
+          "conversions_timeseries": {
+            "points": [
+              {
+                "bucket": "2026-11-27T15:00:00+00:00",
+                "converted_identities": {
+                  "control": 74,
+                  "reviews": 96
+                }
+              }
+            ],
+            "granularity": "hour"
+          }
+        },
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 139326,
+              "sum_squares": 374541274
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 224604,
+              "sum_squares": 716260696
+            }
+          },
+          "inference": {
+            "reviews": {
+              "lift": 0.5836686638841078,
+              "ci_low": 0.02391639277097224,
+              "ci_high": 1.1434209349972433,
+              "chance_to_win": 0.9795087427738565
+            }
+          },
+          "metric_id": 1519,
+          "conversions_timeseries": null
+        },
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 0,
+              "sum_squares": 0
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 0,
+              "sum_squares": 0
+            }
+          },
+          "inference": {
+            "reviews": null
+          },
+          "metric_id": 1520,
+          "conversions_timeseries": {
+            "points": [],
+            "granularity": "hour"
+          }
+        },
+        {
+          "variants": {
+            "control": {
+              "n": 2007,
+              "sum": 0,
+              "sum_squares": 0
+            },
+            "reviews": {
+              "n": 2043,
+              "sum": 0,
+              "sum_squares": 0
+            }
+          },
+          "inference": {
+            "reviews": null
+          },
+          "metric_id": 1521,
+          "conversions_timeseries": {
+            "points": [],
+            "granularity": "hour"
+          }
+        }
+      ],
+      "srm_p_value": null,
+      "exposures_timeseries": {
+        "points": [
+          {
+            "bucket": "2026-11-27T15:00:00+00:00",
+            "new_identities": {
+              "control": 2007,
+              "reviews": 2043
+            }
+          }
+        ],
+        "granularity": "hour"
+      }
+    },
+    "is_final": false
+  }
+}
