@@ -4,7 +4,7 @@
 
 - Node.js 20 or newer
 - These Aiven services: **PostgreSQL**, **Apache Kafka**, **OpenSearch**, **Valkey** and **ClickHouse**
-- A **Flagsmith** environment with a warehouse connected ([flagsmith.md](flagsmith.md#setting-it-up))
+- **Flagsmith**: a Production and a Simulation environment, each with a warehouse connected, and the Flagsmith CLI v2 ([flagsmith.md](flagsmith.md#setting-it-up))
 
 ## Run it locally
 
@@ -44,4 +44,5 @@ npm run typecheck
 npm run test:concurrency # stock races, deadlocks, idempotency (writes doc/concurrency-results.md)
 npm run load:test        # load test against a running deployment
 npm run traffic:sim -- --dry-run   # simulated shoppers for the experiment (doc/flagsmith.md)
+npm run exp -- check --env=prod    # Flagsmith: warehouse, flag, keyed variation, metrics, experiment
 ```

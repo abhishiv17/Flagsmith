@@ -33,7 +33,19 @@ Code: [`web/src/pages/Product.tsx`](../web/src/pages/Product.tsx) and [`web/src/
 
 - **Split:** 50 / 50, with 100% of identified visitors enrolled.
 - **Real shoppers:** the live store link, shared as widely as we can.
-- **Simulated shoppers:** `npm run traffic:sim` ([`scripts/simulate-traffic.ts`](../scripts/simulate-traffic.ts)). Each one is a fresh Flagsmith identity (prefix `sim-`, trait `simulated = true`) that gets its version from Flagsmith and sends the same events as the store. **Its conversion rates are inputs we choose**, so simulated results prove the pipeline and the statistics work. They say nothing about real shoppers. We report simulated and real results separately.
+- **Simulated shoppers:** `npm run traffic:sim` ([`scripts/simulate-traffic.ts`](../scripts/simulate-traffic.ts)). Each one is a fresh Flagsmith identity (prefix `sim-`, trait `simulated = true`) that gets its version from Flagsmith and sends the same events as the store. They run in a **separate Flagsmith environment, Simulation**, with its own copy of the flag, metrics and experiment, so they can't mix into the real shoppers' result; the script refuses the live store's key. **Their conversion rates are inputs we choose**, so simulated results prove the pipeline and the statistics work. They say nothing about real shoppers.
+
+### How much traffic a result needs
+
+Shoppers needed **per version** (two proportions, 5% two-sided, 80% power; Flagsmith's Bayesian engine needs about the same):
+
+| Control add-to-cart | Reviews add-to-cart | Lift | Per version |
+|---|---|---|---|
+| 10% | 11% | +10% (our hypothesis) | ~14,700 |
+| 10% | 12% | +20% | ~3,800 |
+| 10% | 13% | +30% (simulator default) | ~1,800 |
+
+A few days of real traffic gives hundreds of shoppers, not ~15,000 per version. So the honest expectation for real traffic is **inconclusive, keep control**, which the decision rule below already covers. We say so rather than over-claim. The simulated run uses about 2,000 per version, enough to show Flagsmith calling a 30% lift.
 
 ## Decision rule
 
@@ -56,4 +68,15 @@ Testing a version most people never see would dilute its effect and split our sm
 
 ## Result
 
-Filled in when the experiment ends: exposures per version, add-to-cart rate, lift, win probability, the revenue guardrail, and the decision. Real and simulated traffic are reported separately.
+Data freeze: **Sun 29 Nov 2026, 12:00 IST**. Numbers from the Flagsmith experiment pages (`npm run exp -- results --write` snapshots are in [results.md](results.md)).
+
+| Traffic | Version | Exposed | Add-to-cart rate | Lift vs control | Win probability | Revenue (₹) |
+|---|---|---|---|---|---|---|
+| Real shoppers | control | _ | _ | — | — | _ |
+| Real shoppers | reviews | _ | _ | _ | _ | _ |
+| Simulated (rates are inputs) | control | _ | _ | — | — | _ |
+| Simulated (rates are inputs) | reviews | _ | _ | _ | _ | _ |
+
+**Decision (real shoppers):** _ship reviews / keep control (inconclusive)_, by the rule above. Rolled out with the same flag at _time_.
+
+**What the simulated run shows:** _bucketing split, exposures, events and Flagsmith's call on a lift we set._

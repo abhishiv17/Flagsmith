@@ -69,21 +69,25 @@ Flagsmith counts a conversion only after that identity's first exposure, so an a
 
 ## Setting it up
 
-### 1. Flagsmith account and environment
-1. Create an organisation and project on [Flagsmith Cloud](https://app.flagsmith.com). Use one environment for the experiment (for example `Production`).
-2. **Environment settings → Warehouse:** enable the managed **Flagsmith** warehouse. Experiments can't be created, and events are rejected, until a warehouse is connected. The first events can take a few hours to appear, so do this early.
-3. Copy the environment's **client-side** SDK key.
+### 1. Flagsmith account and environments
+1. Create an organisation and project on [Flagsmith Cloud](https://app.flagsmith.com) with **two environments**:
+   - **Production**: the live store. Only real shoppers.
+   - **Simulation**: only simulated shoppers (`npm run traffic:sim`). It has its own copy of the flag, metrics and experiment, so simulated traffic can never mix into the real result.
+2. In **each** environment, **Environment settings → Warehouse:** enable the managed **Flagsmith** warehouse. Experiments can't be created, and events are rejected, until a warehouse is connected. The first events can take a few hours to appear, so do this early.
+3. Copy each environment's **client-side** SDK key, and create an **Organisation API key** (Organisation settings → API keys) for `npm run exp`.
 
 ### 2. Tell StockHop about it
 Set this on the web app (Aiven App Runtime variables, or `.env` locally):
 
 ```bash
-FLAGSMITH_ENVIRONMENT_KEY=<client-side environment key>
+FLAGSMITH_ENVIRONMENT_KEY=<Production client-side key>     # web app + local .env
+FLAGSMITH_SIM_ENVIRONMENT_KEY=<Simulation client-side key> # local .env only (traffic:sim)
+FLAGSMITH_API_KEY=<Organisation API key>                   # local .env only (npm run exp); never on the web app
 ```
 
-The key is public by design: it is sent to every browser. It is served at runtime, so changing it needs a restart, not a rebuild. `FLAGSMITH_API_URL` and `FLAGSMITH_EVENTS_URL` are only for self-hosted Flagsmith.
+Only `FLAGSMITH_ENVIRONMENT_KEY` goes on the deployed web app. The environment key is public by design: it is sent to every browser. It is served at runtime, so changing it needs a restart, not a rebuild. `FLAGSMITH_API_URL` and `FLAGSMITH_EVENTS_URL` are only for self-hosted Flagsmith.
 
-Steps 3 to 5 can be done in the dashboard, or with the [Flagsmith CLI](https://docs.flagsmith.com/integrating-with-flagsmith/CLI) (v2 or later) as below. The commands follow Flagsmith's [coding-agent setup guide](https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent). `<env>` is the environment key.
+Do steps 3 to 5 for **both** environments (`--env=prod` and `--env=sim`). Step 3 uses the CLI, because it sets the variation key. Steps 4 and 5 are one command, `npm run exp -- setup` ([`scripts/experiment.ts`](../scripts/experiment.ts)), which sends the same requests shown below and skips anything that already exists. Add `--dry-run` to print the requests without sending them. Everything can also be done in the dashboard, or with the [Flagsmith CLI](https://docs.flagsmith.com/integrating-with-flagsmith/CLI) (v2 or later) as below. The commands follow Flagsmith's [coding-agent setup guide](https://docs.flagsmith.com/experimentation/set-up-with-a-coding-agent). `<env>` is the environment key.
 
 ```bash
 flagsmith login
@@ -99,6 +103,17 @@ flagsmith feature create product_trust_signal --value control --enabled
 flagsmith feature variant add product_trust_signal --value reviews --key reviews --weight 0
 flagsmith feature get product_trust_signal --json   # note the flag id and the variation id
 ```
+
+### 4 and 5, the short way
+
+```bash
+npm run exp -- check --env=prod     # warehouse, flag, keyed variation, metrics, experiment: ✓ / ✗
+npm run exp -- setup --env=prod     # creates the 6 metrics and the experiment (not started)
+npm run exp -- start --env=prod     # asks you to type "start"; locks the flag
+# the same three with --env=sim for the Simulation environment
+```
+
+The metrics, hypothesis and split come from [`server/lib/experiment-spec.ts`](../server/lib/experiment-spec.ts). A unit test fails if those event names ever drift from [`web/src/experiments.tsx`](../web/src/experiments.tsx). Before starting, check on the experiment page that **Add to cart** is the primary metric.
 
 ### 4. Create the metrics
 One metric per row of the events table above, with the event name copied exactly. In the dashboard, or with `POST api/v1/environments/<env>/experiment-metrics/` and a body like:
@@ -137,11 +152,24 @@ On the experiment page, check the **Exposures** panel first: enrolment should ma
 
 When one variant is clearly ahead (see the decision rule in [experiment.md](experiment.md)), end the experiment and roll the winner out to everyone **with the same flag**. No deploy is needed. Afterwards, remove the losing versions from the code and the flag from Flagsmith.
 
-To refresh and read results from the CLI: `POST .../experiments/<id>/results/refresh/` (at most once every 5 minutes), then `GET .../experiments/<id>/results/`.
+To refresh and read results from the terminal:
+
+```bash
+npm run exp -- results --env=prod            # refresh (max once per 5 minutes) and print
+npm run exp -- results --env=sim --write     # also saves doc/results/<env>-<time>.json and logs it in doc/results.md
+```
+
+It prints the experiment's numbers and every win-probability field it finds, against the decision rule. Flagsmith doesn't document the shape of the results response, so the raw JSON is kept as the record. With the CLI alone: `POST .../experiments/<id>/results/refresh/`, then `GET .../experiments/<id>/results/`.
+
+**Ending and rolling out** happens in the dashboard: **End experiment**, then choose what the flag serves (the winner, or control). That becomes the flag's default, the results freeze and the flag unlocks. No API for this is documented, so the script doesn't do it.
 
 ## Simulated traffic
 
+Simulated shoppers go **only** to the Simulation environment (`FLAGSMITH_SIM_ENVIRONMENT_KEY`). The script refuses to run without that key, or if it equals the live store's key.
+
 ```bash
+npm run traffic:sim -- --visitors=50       # smoke test: exposures appear in the Simulation experiment
+npm run traffic:sim -- --visitors=2000 --rates=control:0.10,reviews:0.13   # twice: ~2,000 per version
 npm run traffic:sim -- --visitors=600
 npm run traffic:sim -- --visitors=600 --rates=control:0.10,reviews:0.13
 npm run traffic:sim -- --dry-run      # no Flagsmith calls
